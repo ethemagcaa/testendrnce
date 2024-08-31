@@ -1,0 +1,14 @@
+app:
+  cors:
+    allowedOrigins: http://localhost:3000
+  swagger:
+    server:
+      url: http://localhost:8001
+      description: Default Server URL
+
+spring:
+  # Spring Datasource
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/endrnce?useMysqlMetadata=true&characterEncoding=utf8&serverTimezone=UTC
+    username: test
+    password: root

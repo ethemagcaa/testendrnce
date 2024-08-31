@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queries>
+
+    <query name="selectUserQuery">
+        SELECT DISTINCT u.id, u.first_name, u.last_name, u.email, u.last_login_date, pt.name AS provider_type_name,
+        (
+            SELECT GROUP_CONCAT(r1.name SEPARATOR ' ')
+            FROM role r1
+            INNER JOIN user_role ur1 on r1.id = ur1.role_id
+            WHERE ur1.user_id = u.id
+        ) AS roles
+        FROM user u
+        LEFT JOIN user_role ur on u.id = ur.user_id
+        INNER JOIN role r on ur.role_id = r.id
+        LEFT OUTER JOIN provider_type pt on pt.id = u.provider_type_id
+        WHERE 1=1
+        {WHERE}
+        {ORDERBY}
+        LIMIT :limit
+        OFFSET :offset
+    </query>
+
+    <query name="selectCountUserQuery">
+        SELECT COUNT(DISTINCT u.id)
+        FROM user u
+        LEFT JOIN user_role ur on u.id = ur.user_id
+        INNER JOIN role r on ur.role_id = r.id
+        LEFT OUTER JOIN provider_type pt on pt.id = u.provider_type_id
+        WHERE 1=1
+        {WHERE}
+    </query>
+
+    <query name="selectRoleQuery">
+        SELECT id, name
+        FROM role
+        {WHERE}
+        {ORDERBY}
+        LIMIT :limit
+        OFFSET :offset
+    </query>
+
+    <query name="selectCountRoleQuery">
+        SELECT COUNT(DISTINCT id)
+        FROM role
+        WHERE 1=1
+        {WHERE}
+    </query>
+
+    <query name="selectCucumberChildren">
+        <![CDATA[
+            SELECT cc.id, cc.cucumber_feature_id, cc.name, cc.description, cc.keyword, cc.location,
+            ceth.cells exampleHeader, cetb.cells exampleBody, cf.name AS featureName, GROUP_CONCAT(gt.name SEPARATOR ' ') AS tags
+            FROM cucumber_children cc
+            INNER JOIN cucumber_feature cf ON cf.id = cc.cucumber_feature_id
+            LEFT JOIN cucumber_example ce ON cc.id = ce.cucumber_children_id
+            LEFT JOIN cucumber_example_table_body cetb ON ce.id = cetb.cucumber_example_id
+            LEFT JOIN cucumber_example_table_header ceth ON ce.id = ceth.cucumber_example_id
+            LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+            INNER JOIN cucumber_tag gt ON cc2t.cucumber_tag_id = gt.id
+            WHERE
+            1=1
+            {WHERE_TAG}
+            GROUP BY cc.id, cc.cucumber_feature_id, cc.name, cc.description, cc.keyword, cc.location, exampleHeader, exampleBody, cf.name
+        ]]>
+    </query>
+
+    <query name="selectTestCaseQuery">
+        <![CDATA[
+            SELECT cc.id, cc.cucumber_feature_id, cc.name, cc.description, cc.keyword, cc.location, ceth.cells exampleHeader, cetb.cells exampleBody, cf.name AS featureName,
+            (
+                SELECT GROUP_CONCAT(name SEPARATOR ' ')
+                FROM cucumber_tag
+                INNER JOIN cucumber_children2tag ON cucumber_tag.id = cucumber_children2tag.cucumber_tag_id
+                WHERE cucumber_children2tag.cucumber_children_id = cc.id
+            ) AS tags
+            FROM cucumber_children cc
+            INNER JOIN cucumber_feature cf ON cf.id = cc.cucumber_feature_id
+            LEFT JOIN cucumber_example ce ON cc.id = ce.cucumber_children_id
+            LEFT JOIN cucumber_example_table_body cetb ON ce.id = cetb.cucumber_example_id
+            LEFT JOIN cucumber_example_table_header ceth ON ce.id = ceth.cucumber_example_id
+            LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+            INNER JOIN cucumber_tag ct ON cc2t.cucumber_tag_id = ct.id
+            WHERE cc.id {CONDITION} IN (
+                SELECT cc.id
+                FROM cucumber_children cc
+                LEFT JOIN cucumber_example ce ON cc.id = ce.cucumber_children_id
+                LEFT JOIN cucumber_example_table_body cetb ON ce.id = cetb.cucumber_example_id
+                LEFT JOIN cucumber_example_table_header ceth ON ce.id = ceth.cucumber_example_id
+                LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+                INNER JOIN cucumber_tag ct ON cc2t.cucumber_tag_id = ct.id
+                WHERE 1=1
+                {FILTER}
+                GROUP BY cc.id
+                {FILTER_HAVING}
+            )
+            {TAGNAME}
+            {SEARCH}
+            {FEATUREID}
+            GROUP BY cc.id, cc.cucumber_feature_id, cc.name, cc.description, cc.keyword, cc.location, exampleHeader, exampleBody, cf.name
+            {HAVING}
+            {ORDERBY}
+            LIMIT :limit
+            OFFSET :offset
+        ]]>
+    </query>
+
+    <query name="selectCountTestCaseQuery">
+        <![CDATA[
+            SELECT SUM(TotalByOrder) Count
+            FROM (
+                SELECT 1 TotalByOrder, cc.id, cc.cucumber_feature_id, cc.name, cc.description, cc.keyword, cc.location, ceth.cells exampleHeader, cetb.cells exampleBody, cf.name AS featureName,
+                    (
+                        SELECT GROUP_CONCAT(name SEPARATOR ' ')
+                        FROM cucumber_tag
+                        INNER JOIN cucumber_children2tag ON cucumber_tag.id = cucumber_children2tag.cucumber_tag_id
+                        WHERE cucumber_children2tag.cucumber_children_id = cc.id
+                    ) AS tags
+                    FROM cucumber_children cc
+                    INNER JOIN cucumber_feature cf ON cf.id = cc.cucumber_feature_id
+                    LEFT JOIN cucumber_example ce ON cc.id = ce.cucumber_children_id
+                    LEFT JOIN cucumber_example_table_body cetb ON ce.id = cetb.cucumber_example_id
+                    LEFT JOIN cucumber_example_table_header ceth ON ce.id = ceth.cucumber_example_id
+                    LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+                    INNER JOIN cucumber_tag ct ON cc2t.cucumber_tag_id = ct.id
+                    WHERE cc.id {CONDITION} IN (
+                        SELECT cc.id
+                        FROM cucumber_children cc
+                        LEFT JOIN cucumber_example ce ON cc.id = ce.cucumber_children_id
+                        LEFT JOIN cucumber_example_table_body cetb ON ce.id = cetb.cucumber_example_id
+                        LEFT JOIN cucumber_example_table_header ceth ON ce.id = ceth.cucumber_example_id
+                        LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+                        INNER JOIN cucumber_tag ct ON cc2t.cucumber_tag_id = ct.id
+                        WHERE 1=1
+                        {FILTER}
+                        GROUP BY cc.id
+                        {FILTER_HAVING}
+                    )
+                    {TAGNAME}
+                    {SEARCH}
+                    {FEATUREID}
+                    GROUP BY cc.id, cc.cucumber_feature_id, cc.name, cc.description, cc.keyword, cc.location, exampleHeader, exampleBody, cf.name
+                    {HAVING}
+            ) SRC
+        ]]>
+    </query>
+
+    <query name="selectScenarios">
+        <![CDATA[
+            SELECT cc.id, cc.cucumber_feature_id, cc.name, cc.description, cc.keyword, cc.location,
+            ceth.cells exampleHeader, cetb.cells exampleBody, cf.name AS featureName, GROUP_CONCAT(ct.name SEPARATOR ' ') AS tags
+            FROM cucumber_children cc
+            INNER JOIN cucumber_feature cf ON cf.id = cc.cucumber_feature_id
+            LEFT join cucumber_example ce ON cc.id = ce.cucumber_children_id
+            LEFT join cucumber_example_table_body cetb ON ce.id = cetb.cucumber_example_id
+            LEFT join cucumber_example_table_header ceth ON ce.id = ceth.cucumber_example_id
+            LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+            INNER JOIN cucumber_tag ct ON cc2t.cucumber_tag_id = ct.id
+            GROUP BY cc.id, cc.cucumber_feature_id, cc.name, cc.description, cc.keyword, cc.location, exampleHeader, exampleBody, cf.name
+        ]]>
+    </query>
+
+    <query name="selectCiByEnvironment">
+        <![CDATA[
+            SELECT ac.id, ac.job_name
+            FROM allure_environment ae
+            INNER JOIN allure_suite asu ON ae.id = asu.allure_environment_id
+            INNER JOIN allure_ci ac on asu.allure_ci_id = ac.id
+            WHERE
+            ae.id = :environmentId
+            GROUP BY ac.job_name
+        ]]>
+    </query>
+
+    <query name="selectSuiteByEnvironmentNCiNSuiteIdLimit10">
+        <![CDATA[
+            SELECT * FROM
+            (
+                SELECT asu.id, asu.name,
+                asu.failed, asu.broken, asu.skipped, asu.passed, asu.unknown,
+                asu.total, asu.start, asu.stop, asu.duration
+                FROM allure_suite asu
+                INNER JOIN allure_environment ae ON ae.id = asu.allure_environment_id
+                LEFT OUTER JOIN allure_ci ac on asu.allure_ci_id = ac.id
+                WHERE
+                asu.allure_environment_id = :environmentId
+                {WHERE_CI}
+                {WHERE_SUITE}
+                ORDER BY asu.start DESC
+                LIMIT 10
+            ) AS sub
+            ORDER BY id ASC
+        ]]>
+    </query>
+
+    <query name="selectCucumberHistoryLimit10">
+        <![CDATA[
+            SELECT * FROM
+            (
+                SELECT * FROM cucumber_history ORDER BY id DESC LIMIT 10
+            ) AS sub
+            ORDER BY id ASC
+        ]]>
+    </query>
+
+    <query name="selectCucumberFeature">
+        <![CDATA[
+            SELECT DISTINCT cf.*
+            FROM cucumber_feature cf
+            INNER JOIN cucumber_children cc ON cf.id = cc.cucumber_feature_id
+            LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+            INNER JOIN cucumber_tag ct ON cc2t.cucumber_tag_id = ct.id
+            WHERE cc.id {CONDITION} IN (
+                SELECT cc.id
+                FROM cucumber_children cc
+                LEFT JOIN cucumber_example ce ON cc.id = ce.cucumber_children_id
+                LEFT JOIN cucumber_example_table_body cetb ON ce.id = cetb.cucumber_example_id
+                LEFT JOIN cucumber_example_table_header ceth ON ce.id = ceth.cucumber_example_id
+                LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+                INNER JOIN cucumber_tag ct ON cc2t.cucumber_tag_id = ct.id
+                WHERE 1=1
+                {FILTER}
+                GROUP BY cc.id
+                {FILTER_HAVING}
+            )
+        ]]>
+    </query>
+
+    <query name="selectCountTestStepsQuery">
+        <![CDATA[
+            SELECT COUNT(*) Count
+            FROM
+            (
+                SELECT cc.id AS childrenID, cs.id AS stepID, cs.text, cs.keyword, cs.keyword_type, cs.location, cs.doc_string,
+                GROUP_CONCAT(ct.name SEPARATOR ' ') AS tags
+                FROM cucumber_children cc
+                LEFT JOIN cucumber_example ce ON cc.id = ce.cucumber_children_id
+                LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+                LEFT JOIN cucumber_tag ct ON cc2t.cucumber_tag_id = ct.id
+                LEFT JOIN cucumber_steps cs ON cc.id = cs.cucumber_children_id
+                WHERE 1=1
+                {WHERE_TAG}
+                GROUP BY childrenID, stepID, cc.name, cc.description, cs.text, cs.keyword, cs.keyword_type, cs.location, cs.doc_string
+            ) SRC
+        ]]>
+    </query>
+
+    <query name="selectTagsQuery">
+        <![CDATA[
+            WITH id_table AS (
+                SELECT cc.id, cetb.cells exampleBody
+                FROM cucumber_children cc
+                LEFT JOIN cucumber_example ce ON cc.id = ce.cucumber_children_id
+                LEFT JOIN cucumber_example_table_body cetb ON ce.id = cetb.cucumber_example_id
+                LEFT JOIN cucumber_example_table_header ceth ON ce.id = ceth.cucumber_example_id
+                LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+                INNER JOIN cucumber_tag ct ON cc2t.cucumber_tag_id = ct.id
+                WHERE cc.id {CONDITION} IN (
+                    SELECT cc.id
+                    FROM cucumber_children cc
+                    LEFT JOIN cucumber_example ce ON cc.id = ce.cucumber_children_id
+                    LEFT JOIN cucumber_example_table_body cetb ON ce.id = cetb.cucumber_example_id
+                    LEFT JOIN cucumber_example_table_header ceth ON ce.id = ceth.cucumber_example_id
+                    LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+                    INNER JOIN cucumber_tag ct ON cc2t.cucumber_tag_id = ct.id
+                    WHERE 1=1
+                    {WHERE_TAG}
+                    GROUP BY cc.id
+                )
+                GROUP BY cc.id, exampleBody
+            )
+            SELECT gt.name, count(gt.name) AS counter
+            FROM id_table e
+            LEFT JOIN cucumber_children2tag cc2t ON e.id = cc2t.cucumber_children_id
+            INNER JOIN cucumber_tag gt ON cc2t.cucumber_tag_id = gt.id
+            GROUP BY gt.name
+            ORDER BY counter DESC
+        ]]>
+    </query>
+
+    <query name="selectCountVendorQuery">
+        SELECT COUNT(DISTINCT id)
+        FROM health_check_vendor
+        WHERE 1=1
+        {WHERE}
+    </query>
+
+    <query name="selectVendorQuery">
+        SELECT id, name,url, period, status
+        FROM health_check_vendor
+        WHERE 1=1
+        {WHERE}
+        {ORDERBY}
+        LIMIT :limit
+        OFFSET :offset
+    </query>
+
+    <query name="selectCountEndpointQuery">
+        SELECT COUNT(DISTINCT hce.id)
+        FROM
+        health_check_vendor hcv
+        INNER JOIN health_check_endpoint hce on hcv.id = hce.health_check_vendor_id
+        WHERE
+        health_check_vendor_id = :vendorId
+        {WHERE}
+    </query>
+
+    <query name="selectEndpointQuery">
+        SELECT hce.id, hce.health_check_vendor_id, hce.name, hce.period, hce.path, hce.request_type, hce.next_run_time, hce.status
+        FROM
+        health_check_vendor hcv
+        INNER JOIN health_check_endpoint hce on hcv.id = hce.health_check_vendor_id
+        WHERE
+        hce.health_check_vendor_id = :vendorId
+        {WHERE}
+        {ORDERBY}
+        LIMIT :limit
+        OFFSET :offset
+    </query>
+
+    <query name="selectCountEndPointHistoryQuery">
+        SELECT COUNT(DISTINCT hcesh.id)
+        FROM
+        health_check_vendor hcv
+        INNER JOIN health_check_endpoint hce on hcv.id = hce.health_check_vendor_id
+        INNER JOIN health_check_endpoint_status_history hcesh on hce.id = hcesh.health_check_endpoint_id
+        WHERE
+        hcv.status = true
+        AND
+        hce.status = true
+        {WHERE}
+    </query>
+
+    <query name="selectEndPointHistoryQuery">
+        SELECT hcesh.id, hcesh.health_check_endpoint_id, hcv.name AS vendorName, hce.name AS endpointName, hcesh.check_date, hcesh.status
+        FROM
+        health_check_endpoint hce
+        INNER JOIN health_check_vendor hcv on hcv.id = hce.health_check_vendor_id AND hcv.status = true AND hce.status = true
+        ,
+        LATERAL
+        (
+        SELECT *
+        FROM health_check_endpoint_status_history hcesh
+        WHERE hce.id = hcesh.health_check_endpoint_id
+        ORDER BY hcesh.check_date DESC
+        LIMIT 1
+        ) as hcesh
+        {WHERE}
+        {ORDERBY}
+        LIMIT :limit
+        OFFSET :offset
+    </query>
+
+    <query name="selectActiveEndpointsOfVendor">
+        SELECT hce.id, hce.name, IFNULL(hce.period, hcv.period) AS period, hcv.url as vendorUrl, hce.path,
+        hce.request_type, hce.request_header, hce.request_payload, hce.next_run_time,
+        hcv.id as vendorId
+        FROM health_check_vendor hcv
+        INNER JOIN health_check_endpoint hce on hcv.id = hce.health_check_vendor_id
+        WHERE
+        hcv.status = true AND hce.status = true
+        AND (hce.next_run_time IS NULL OR hce.next_run_time &lt;= :nextRunTime)
+        {WHERE}
+    </query>
+
+    <query name="selectCountEnvironmentQuery">
+        SELECT COUNT(DISTINCT hce.id)
+        FROM
+        health_check_environment hce
+        INNER JOIN health_check_vendor hcv on hcv.id = hce.health_check_vendor_id
+        WHERE
+        1=1
+        {WHERE}
+    </query>
+
+    <query name="selectEnvironmentQuery">
+        SELECT hce.id, hce.health_check_vendor_id, hce.environment_key, hcv.name AS vendorName
+        FROM
+        health_check_environment hce
+        INNER JOIN health_check_vendor hcv on hcv.id = hce.health_check_vendor_id
+        WHERE
+        1=1
+        {WHERE}
+        {ORDERBY}
+        LIMIT :limit
+        OFFSET :offset
+    </query>
+
+    <query name="selectParentHierarchyOfFeatureMap">
+        WITH RECURSIVE ParentHierarchy AS (
+            SELECT id, parent_id, name, CAST(parent_id AS CHAR(1024)) AS parentPath, status
+            FROM
+            feature_map
+
+            UNION DISTINCT
+
+            SELECT fm.id, fm.parent_id, fm.name, CONCAT(fm.parent_id, ',', ph.parentPath) AS parent_path, fm.status
+            FROM
+            feature_map fm
+            INNER JOIN
+            ParentHierarchy ph ON fm.parent_id = ph.id
+        ),
+        MaxPaths AS (
+            SELECT id, MAX(LENGTH(parentPath)) AS max_length
+            FROM
+            ParentHierarchy
+            GROUP BY
+            id
+        )
+        SELECT ph.id, ph.parent_id, ph.name, ph.parentPath, ph.status
+        FROM
+        ParentHierarchy ph
+        JOIN
+        MaxPaths mp ON ph.id = mp.id AND (LENGTH(ph.parentPath) = mp.max_length OR (ph.parentPath is NULL AND ph.parent_id is NULL))
+        ORDER BY
+        ph.id
+    </query>
+
+    <query name="selectScenariosIncludeFeatureTags">
+        SELECT *
+        FROM (
+            SELECT
+            cc.id,
+            cf.id AS cucumber_feature_id,
+            cc.name,
+            ceth.cells exampleHeader, cetb.cells exampleBody,
+            CONCAT_WS(', ',
+            GROUP_CONCAT(DISTINCT cct.name SEPARATOR ', '),
+            GROUP_CONCAT(DISTINCT cft.name SEPARATOR ', ')
+            ) AS tags
+            FROM
+            cucumber_children cc
+
+            LEFT JOIN cucumber_example ce ON cc.id = ce.cucumber_children_id
+            LEFT JOIN cucumber_example_table_body cetb ON ce.id = cetb.cucumber_example_id
+            LEFT JOIN cucumber_example_table_header ceth ON ce.id = ceth.cucumber_example_id
+
+            INNER JOIN cucumber_feature cf ON cc.cucumber_feature_id = cf.id
+            LEFT JOIN cucumber_children2tag cc2t ON cc.id = cc2t.cucumber_children_id
+            LEFT JOIN cucumber_tag cct ON cc2t.cucumber_tag_id = cct.id
+            LEFT JOIN cucumber_feature2tag cf2t ON cf.id = cf2t.cucumber_feature_id
+            LEFT JOIN cucumber_tag cft ON cf2t.cucumber_tag_id = cft.id
+            WHERE
+            cc.keyword != 'Background'
+            GROUP BY
+            cc.id, cf.id, cc.name, ceth.cells, cetb.cells
+        ) AS cucumbers
+        WHERE
+        {WHERE}
+    </query>
+</queries>

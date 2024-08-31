@@ -1,0 +1,23 @@
+{
+  "private": "true",
+  "name": "endrnce",
+  "author": "Jotform QA Team",
+  "license": "ISC",
+  "scripts": {
+    "stop": "kill-port --port 3000,8001",
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jotform/test-endrnce.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jotform/test-endrnce/issues"
+  },
+  "homepage": "https://github.com/jotform/test-endrnce#readme",
+  "devDependencies": {
+    "husky": "^8.0.1",
+    "kill-port": "^2.0.1"
+  },
+  "dependencies": {}
+}

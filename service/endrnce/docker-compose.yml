@@ -1,0 +1,36 @@
+version: "3.3"
+services:
+  endurance:
+    image: endurance:1.0.0
+    build:
+      context: .
+    container_name: endrnce
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/endrnce?useMysqlMetadata=true
+      SPRING_DATASOURCE_USERNAME: test
+      SPRING_DATASOURCE_PASSWORD: root
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+
+  db:
+    image: arm64v8/mysql:8.1.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: "endrnce"
+      # So you don"t have to use root, but you can if you like
+      MYSQL_USER: "test"
+      # You can use whatever password you like
+      MYSQL_PASSWORD: "root"
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: "root"
+    ports:
+      - "3306:3306"
+    volumes:
+      - my-db:/var/lib/mysql
+# Names our volume
+volumes:
+  my-db:

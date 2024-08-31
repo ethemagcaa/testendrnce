@@ -1,0 +1,4 @@
+NODE_ENV=production
+
+PUBLIC_URL=https://ta-dashboards.jotformers.com
+ENDRNCE_SERVICE=https://ta-dashboards-api.jotformers.com

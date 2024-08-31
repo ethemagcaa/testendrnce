@@ -1,0 +1,26 @@
+app:
+  cors:
+    allowedOrigins: '*'
+  swagger:
+    server:
+      url: https://ta-dashboards-api.jotformers.com
+      description: Default Server URL
+
+spring:
+  mvc:
+    async:
+      request-timeout: 60000
+  lifecycle:
+    timeout-per-shutdown-phase: "1m"
+  # Spring Datasource
+  datasource:
+    url: jdbc:mysql://10.128.0.98:3306/jotform_tcase?useMysqlMetadata=true
+    username: test
+    password:  root
+
+server:
+  shutdown: "graceful"
+
+logging:
+  level:
+    ROOT: ERROR

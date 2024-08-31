@@ -1,0 +1,15 @@
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (1,'2023-06-15T00:00:00.000+00:00',15,95);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (2,'2023-06-20T00:00:00.000+00:00',16,99);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (3,'2023-07-01T00:00:00.000+00:00',18,112);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (4,'2023-07-12T00:00:00.000+00:00',19,122);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (5,'2023-07-15T00:00:00.000+00:00',20,130);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (6,'2023-07-23T00:00:00.000+00:00',22,145);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (7,'2023-08-16T00:00:00.000+00:00',23,150);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (8,'2023-09-04T00:00:00.000+00:00',24,155);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (9,'2023-09-11T00:00:00.000+00:00',25,156);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (10,'2023-09-15T00:00:00.000+00:00',26,160);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (11,'2023-09-18T00:00:00.000+00:00',26,161);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (12,'2023-09-20T00:00:00.000+00:00',26,163);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (13,'2023-09-25T00:00:00.000+00:00',26,165);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (14,'2023-09-28T00:00:00.000+00:00',27,166);
+INSERT INTO cucumber_history(id,adding_date,feature_count,test_case_count) VALUES (15,'2023-10-10T00:00:00.000+00:00',27,167);

@@ -1,0 +1,62 @@
+server:
+  port: 8001
+
+app:
+  title: Endurance Service
+  description: Endpoint list of Endurance Service
+  version: 1.0.0
+  timezone: UTC
+  auth:
+    tokenSecret: f76b013fe883fa58557f8ca56fb382d733ba25953d92a8027b2420fc430f1011cfc554dcb96a40b1e219a749566daf8a7db5e3f75c389ff5f8bc178bf27182a1
+    tokenExpirationMs: 864000000 # 10 days
+
+spring:
+  profiles:
+    active: local
+  # Spring Datasource
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 100
+      minimum-idle: 5
+      idle-timeout: 1200000
+      max-lifetime: 6000000
+      connection-timeout: 3000000
+      schema: "public"
+  # Spring Date Configuration
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    ignore-migration-patterns: "*:missing"
+
+# Health Check Configuration - Actuator
+management:
+  endpoint:
+    health:
+      group:
+        readiness:
+          include: "*"
+          show-details: always
+        liveness:
+          include: ping
+          show-details: never
+
+# Swagger Configuration
+springdoc:
+  show-actuator: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /documentation
+
+square:
+  environment: sandbox
+  clientId: sandbox-sq0idb-LDgjOvsi4auAKFE-5aoH3A
+  clientSecret: sandbox-sq0csb-X_bopyz60oVPWg0e0SXmvHMcQ0-a3o7SMKZz4X2sceQ
+  redirectUri: http://localhost:8001/square/oauth/callback
+  state: unique_state_value
+  tokenUrl: https://connect.squareupsandbox.com/oauth2/token
+  scope: PAYMENTS_WRITE
+  authorizeUrl: https://connect.squareupsandbox.com/oauth2/authorize

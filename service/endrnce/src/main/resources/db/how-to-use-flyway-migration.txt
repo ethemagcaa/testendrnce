@@ -1,0 +1,37 @@
+Lütfen bu projede geliştirme yaparken aşağıdaki kurallara uygun hareket ediniz.
+
+****************************************************************************************************************
+
+Dosya isimlendirmesine göre flyway çalışır.
+Developer'ların aynı dosya isimlerini vermesini engellemek için şu şekilde isimlendireceğiz.
+Flyway'in sırasız çalışmasını flyway.out-of-order=true attribute'ü ile sağlıyoruz.
+
+Örnek : V2023.04.11.1400.sql
+		V2023.04.11.1656.sql
+
+****************************************************************************************************************
+
+Eğer flyway'e eklediğiniz script hata verirse, bu script içerisinde güncellemenizi yapınız.
+Ancak bu "Validate failed. Migration Checksum mismatch for migration 2023.11.07.1656" şeklinde uyarı verecektir.
+Çünkü flyway çalıştırdığı ve migration tablosunda <"flyway"> tuttuğu sql dosyasını checksum'ını tuturak o dosyanın
+değişmediğini varsayıyor. Eğer checksum farklı çıkarsa dosya değişmiş demektir.
+Bu durumda da değişen dosyanın aslında yüklenen uygulama ile uyumsuzluk oluşturabileceğini söylüyor.
+Bu yüzden hata alınan versiyon flyway metadata tablosundan silinmeli ve daha sonra deploy yapılmalıdır.
+
+delete from flyway where version = '2023.04.11.1401'
+
+****************************************************************************************************************
+
+Flyway sql'lerini çalıştırırken eğer hata alırsa deployu durduracaktır.
+Bu noktada eğer uygulamanın ayağa kalkışı sırasında hata almak istemiyorsanız
+klasik if else şeklinde scriplerinizi yazabilirsiniz.
+
+IF condition THEN
+   {...statements to execute when condition is TRUE...}
+
+ELSE
+   {...statements to execute when condition is FALSE...}
+
+END IF;
+
+****************************************************************************************************************
